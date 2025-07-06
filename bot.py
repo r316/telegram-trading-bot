@@ -1,4 +1,5 @@
-from telegram.ext import Updater, MessageHandler, Filters
+from telegram import Update
+from telegram.ext import ApplicationBuilder, MessageHandler, ContextTypes, filters
 import yfinance as yf
 import ta
 import pandas as pd
@@ -6,7 +7,7 @@ import pandas as pd
 # 🔑 Paste your Bot Token here:
 BOT_TOKEN = '8119549579:AAFcpFtSTnTi-KM66aZht-juzm1bZmDOlUY'
 
-def ai_trading(update, context):
+async def ai_trading(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.message.text.upper().strip()
 
     if message.startswith("CHECK"):
@@ -15,7 +16,7 @@ def ai_trading(update, context):
             data = yf.download(ticker, period="5d", interval="15m")
 
             if data.empty:
-                update.message.reply_text(f"No data found for {ticker}")
+                await update.message.reply_text(f"No data found for {ticker}")
                 return
 
             close_prices = data['Close'].values.flatten()
@@ -33,17 +34,15 @@ def ai_trading(update, context):
                 signal = "WAIT ⏳"
 
             response = f"{ticker}\nPrice: ₹{latest_price:.2f}\nRSI: {latest_rsi:.2f}\nDecision: {signal}"
-            update.message.reply_text(response)
+            await update.message.reply_text(response)
 
         except Exception as e:
-            update.message.reply_text(f"Error: {str(e)}")
+            await update.message.reply_text(f"Error: {str(e)}")
     else:
-        update.message.reply_text("❓ Please type: CHECK RELIANCE")
+        await update.message.reply_text("❓ Please type: CHECK RELIANCE")
 
-updater = Updater(BOT_TOKEN, use_context=True)
-dp = updater.dispatcher
-dp.add_handler(MessageHandler(Filters.text, ai_trading))
+app = ApplicationBuilder().token(BOT_TOKEN).build()
+app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, ai_trading))
 
-updater.start_polling()
 print("✅ Bot is running... (Ctrl+C to stop)")
-updater.idle()
+app.run_polling()
