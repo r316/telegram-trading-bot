@@ -1,14 +1,14 @@
-from telegram.ext import Updater, MessageHandler, Filters
+from telegram import Update
+from telegram.ext import ApplicationBuilder, MessageHandler, ContextTypes, filters
 import yfinance as yf
 import ta
 import pandas as pd
-import os
 
-BOT_TOKEN = os.getenv('BOT_TOKEN')  # Secure way to handle token
+# 🔑 Replace with your actual Bot Token
+BOT_TOKEN = '8119549579:AAFcpFtSTnTi-KM66aZht-juzm1bZmDOlUY'
 
-def ai_trading(update, context):
+async def ai_trading(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.message.text.upper().strip()
-    chat_id = update.message.chat.id
 
     if message.startswith("CHECK"):
         try:
@@ -16,7 +16,7 @@ def ai_trading(update, context):
             data = yf.download(ticker, period="5d", interval="15m")
 
             if data.empty:
-                context.bot.send_message(chat_id=chat_id, text=f"No data found for {ticker}")
+                await update.message.reply_text(f"No data found for {ticker}")
                 return
 
             close_prices = data['Close'].values.flatten()
@@ -34,16 +34,18 @@ def ai_trading(update, context):
                 signal = "WAIT ⏳"
 
             response = f"{ticker}\nPrice: ₹{latest_price:.2f}\nRSI: {latest_rsi:.2f}\nDecision: {signal}"
-            context.bot.send_message(chat_id=chat_id, text=response)
+            await update.message.reply_text(response)
 
         except Exception as e:
-            context.bot.send_message(chat_id=chat_id, text=f"Error: {str(e)}")
+            await update.message.reply_text(f"Error: {str(e)}")
     else:
-        context.bot.send_message(chat_id=chat_id, text="❓ Please type: CHECK RELIANCE")
+        await update.message.reply_text("❓ Please type: CHECK RELIANCE")
 
-updater = Updater(BOT_TOKEN, use_context=True)
-dispatcher = updater.dispatcher
-dispatcher.add_handler(MessageHandler(Filters.text & (~Filters.command), ai_trading))
+# Build the application with token
+app = ApplicationBuilder().token(BOT_TOKEN).build()
 
-updater.start_polling()
-updater.idle()
+# Add a message handler
+app.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), ai_trading))
+
+# Start polling
+app.run_polling()
