@@ -4,8 +4,7 @@ import yfinance as yf
 import ta
 import pandas as pd
 
-# 🔑 Replace with your actual Bot Token
-BOT_TOKEN = '8119549579:AAFcpFtSTnTi-KM66aZht-juzm1bZmDOlUY'
+BOT_TOKEN = 'YOUR_BOT_TOKEN_HERE'  # Replace this with your token
 
 async def ai_trading(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.message.text.upper().strip()
@@ -41,11 +40,6 @@ async def ai_trading(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await update.message.reply_text("❓ Please type: CHECK RELIANCE")
 
-# Build the application with token
 app = ApplicationBuilder().token(BOT_TOKEN).build()
-
-# Add a message handler
 app.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), ai_trading))
-
-# Start polling
 app.run_polling()
