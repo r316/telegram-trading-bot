@@ -4,7 +4,7 @@ import yfinance as yf
 import ta
 import pandas as pd
 
-BOT_TOKEN = '8119549579:AAFcpFtSTnTi-KM66aZht-juzm1bZmDOlUY'  # Replace this with your token
+BOT_TOKEN = '8119549579:AAFcpFtSTnTi-KM66aZht-juzm1bZmDOlUY'  # Replace this
 
 async def ai_trading(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.message.text.upper().strip()
