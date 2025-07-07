@@ -1,16 +1,12 @@
 from telegram import Update
-from telegram.ext import ApplicationBuilder, MessageHandler, ContextTypes, CommandHandler, filters
+from telegram.ext import Updater, MessageHandler, Filters, CallbackContext
 import yfinance as yf
 import ta
 import pandas as pd
-import os
 
-BOT_TOKEN = os.environ.get("BOT_TOKEN", "8119549579:AAFcpFtSTnTi-KM66aZht-juzm1bZmDOlUY")  # Use environment variable for safety
+BOT_TOKEN = '8119549579:AAFcpFtSTnTi-KM66aZht-juzm1bZmDOlUY'
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("👋 Welcome! Type: CHECK RELIANCE")
-
-async def ai_trading(update: Update, context: ContextTypes.DEFAULT_TYPE):
+def ai_trading(update: Update, context: CallbackContext):
     message = update.message.text.upper().strip()
 
     if message.startswith("CHECK"):
@@ -19,7 +15,7 @@ async def ai_trading(update: Update, context: ContextTypes.DEFAULT_TYPE):
             data = yf.download(ticker, period="5d", interval="15m")
 
             if data.empty:
-                await update.message.reply_text(f"No data found for {ticker}")
+                update.message.reply_text(f"No data found for {ticker}")
                 return
 
             close_prices = data['Close'].values.flatten()
@@ -37,18 +33,15 @@ async def ai_trading(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 signal = "WAIT ⏳"
 
             response = f"{ticker}\nPrice: ₹{latest_price:.2f}\nRSI: {latest_rsi:.2f}\nDecision: {signal}"
-            await update.message.reply_text(response)
+            update.message.reply_text(response)
 
         except Exception as e:
-            await update.message.reply_text(f"Error: {str(e)}")
+            update.message.reply_text(f"Error: {str(e)}")
     else:
-        await update.message.reply_text("❓ Please type: CHECK RELIANCE")
+        update.message.reply_text("❓ Please type: CHECK RELIANCE")
 
-# ApplicationBuilder from python-telegram-bot 20.x — fully async
-app = ApplicationBuilder().token(BOT_TOKEN).build()
-
-app.add_handler(CommandHandler("start", start))
-app.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), ai_trading))
-
-if __name__ == "__main__":
-    app.run_polling()
+updater = Updater(BOT_TOKEN, use_context=True)
+dp = updater.dispatcher
+dp.add_handler(MessageHandler(Filters.text & ~Filters.command, ai_trading))
+updater.start_polling()
+updater.idle()
