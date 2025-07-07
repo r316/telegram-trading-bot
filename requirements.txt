@@ -1,4 +1,4 @@
-python-telegram-bot==3.11.8
+python-telegram-bot==3.11
 yfinance
 ta
 pandas
