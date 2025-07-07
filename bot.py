@@ -1,10 +1,14 @@
 from telegram import Update
-from telegram.ext import ApplicationBuilder, MessageHandler, ContextTypes, filters
+from telegram.ext import ApplicationBuilder, MessageHandler, ContextTypes, CommandHandler, filters
 import yfinance as yf
 import ta
 import pandas as pd
+import os
 
-BOT_TOKEN = '8119549579:AAFcpFtSTnTi-KM66aZht-juzm1bZmDOlUY'  # Replace this
+BOT_TOKEN = os.environ.get("BOT_TOKEN", "8119549579:AAFcpFtSTnTi-KM66aZht-juzm1bZmDOlUY")  # Use environment variable for safety
+
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("👋 Welcome! Type: CHECK RELIANCE")
 
 async def ai_trading(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.message.text.upper().strip()
@@ -40,6 +44,11 @@ async def ai_trading(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await update.message.reply_text("❓ Please type: CHECK RELIANCE")
 
+# ApplicationBuilder from python-telegram-bot 20.x — fully async
 app = ApplicationBuilder().token(BOT_TOKEN).build()
+
+app.add_handler(CommandHandler("start", start))
 app.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), ai_trading))
-app.run_polling()
+
+if __name__ == "__main__":
+    app.run_polling()
